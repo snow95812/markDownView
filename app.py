@@ -2,6 +2,7 @@ import json
 import os
 import sys
 
+import objc
 from AppKit import (
     NSApplication,
     NSApplicationActivateIgnoringOtherApps,
@@ -9,22 +10,20 @@ from AppKit import (
     NSBezelStyleRounded,
     NSButton,
     NSColor,
+    NSDragOperationCopy,
     NSFont,
     NSMakeRect,
     NSOpenPanel,
+    NSPasteboardTypeFileURL,
     NSRunningApplication,
     NSScrollView,
     NSSplitView,
     NSTableColumn,
     NSTableView,
     NSTextField,
+    NSFilenamesPboardType,
     NSFocusRingTypeNone,
     NSView,
-    NSViewHeightSizable,
-    NSViewMaxXMargin,
-    NSViewMaxYMargin,
-    NSViewMinXMargin,
-    NSViewWidthSizable,
     NSWindow,
     NSWindowStyleMaskClosable,
     NSWindowStyleMaskMiniaturizable,
@@ -63,6 +62,157 @@ def make_label(frame, text: str, font, color, background=False):
 def resource_path(relative_path: str) -> str:
     base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_path, relative_path)
+
+
+class DropContentView(NSView):
+    def initWithFrame_owner_(self, frame, owner):
+        self = objc.super(DropContentView, self).initWithFrame_(frame)
+        if self is None:
+            return None
+        self.owner = owner
+        self.registerForDraggedTypes_([NSFilenamesPboardType, NSPasteboardTypeFileURL])
+        return self
+
+    def draggingEntered_(self, sender):
+        if self.owner._extract_markdown_path(sender.draggingPasteboard()):
+            return NSDragOperationCopy
+        return 0
+
+    def prepareForDragOperation_(self, sender):
+        return self.owner._extract_markdown_path(sender.draggingPasteboard()) is not None
+
+    def performDragOperation_(self, sender):
+        file_path = self.owner._extract_markdown_path(sender.draggingPasteboard())
+        if not file_path:
+            return False
+        self.owner.load_file(file_path)
+        return True
+
+
+class DropSplitView(NSSplitView):
+    def initWithFrame_owner_(self, frame, owner):
+        self = objc.super(DropSplitView, self).initWithFrame_(frame)
+        if self is None:
+            return None
+        self.owner = owner
+        self.registerForDraggedTypes_([NSFilenamesPboardType, NSPasteboardTypeFileURL])
+        return self
+
+    def draggingEntered_(self, sender):
+        if self.owner._extract_markdown_path(sender.draggingPasteboard()):
+            return NSDragOperationCopy
+        return 0
+
+    def prepareForDragOperation_(self, sender):
+        return self.owner._extract_markdown_path(sender.draggingPasteboard()) is not None
+
+    def performDragOperation_(self, sender):
+        file_path = self.owner._extract_markdown_path(sender.draggingPasteboard())
+        if not file_path:
+            return False
+        self.owner.load_file(file_path)
+        return True
+
+
+class DropTableView(NSTableView):
+    def initWithFrame_owner_(self, frame, owner):
+        self = objc.super(DropTableView, self).initWithFrame_(frame)
+        if self is None:
+            return None
+        self.owner = owner
+        self.registerForDraggedTypes_([NSFilenamesPboardType, NSPasteboardTypeFileURL])
+        return self
+
+    def draggingEntered_(self, sender):
+        if self.owner._extract_markdown_path(sender.draggingPasteboard()):
+            return NSDragOperationCopy
+        return 0
+
+    def prepareForDragOperation_(self, sender):
+        return self.owner._extract_markdown_path(sender.draggingPasteboard()) is not None
+
+    def performDragOperation_(self, sender):
+        file_path = self.owner._extract_markdown_path(sender.draggingPasteboard())
+        if not file_path:
+            return False
+        self.owner.load_file(file_path)
+        return True
+
+
+class DropOverlayView(NSView):
+    def initWithFrame_owner_(self, frame, owner):
+        self = objc.super(DropOverlayView, self).initWithFrame_(frame)
+        if self is None:
+            return None
+        self.owner = owner
+        self.registerForDraggedTypes_([NSFilenamesPboardType, NSPasteboardTypeFileURL])
+        self.setWantsLayer_(True)
+        self.layer().setBackgroundColor_(NSColor.clearColor().CGColor())
+        return self
+
+    def hitTest_(self, _point):
+        return None
+
+    def draggingEntered_(self, sender):
+        if self.owner._extract_markdown_path(sender.draggingPasteboard()):
+            return NSDragOperationCopy
+        return 0
+
+    def prepareForDragOperation_(self, sender):
+        return self.owner._extract_markdown_path(sender.draggingPasteboard()) is not None
+
+    def performDragOperation_(self, sender):
+        file_path = self.owner._extract_markdown_path(sender.draggingPasteboard())
+        if not file_path:
+            return False
+        self.owner.load_file(file_path)
+        return True
+
+
+class DropWebView(WKWebView):
+    def initWithFrame_configuration_owner_(self, frame, configuration, owner):
+        self = objc.super(DropWebView, self).initWithFrame_configuration_(frame, configuration)
+        if self is None:
+            return None
+        self.owner = owner
+        self.registerForDraggedTypes_([NSFilenamesPboardType, NSPasteboardTypeFileURL])
+        return self
+
+    def draggingEntered_(self, sender):
+        if self.owner._extract_markdown_path(sender.draggingPasteboard()):
+            return NSDragOperationCopy
+        return 0
+
+    def prepareForDragOperation_(self, sender):
+        return self.owner._extract_markdown_path(sender.draggingPasteboard()) is not None
+
+    def performDragOperation_(self, sender):
+        file_path = self.owner._extract_markdown_path(sender.draggingPasteboard())
+        if not file_path:
+            return False
+        self.owner.load_file(file_path)
+        return True
+
+
+class DropWindow(NSWindow):
+    def setOwner_(self, owner):
+        self.owner = owner
+        self.registerForDraggedTypes_([NSFilenamesPboardType, NSPasteboardTypeFileURL])
+
+    def draggingEntered_(self, sender):
+        if self.owner._extract_markdown_path(sender.draggingPasteboard()):
+            return NSDragOperationCopy
+        return 0
+
+    def prepareForDragOperation_(self, sender):
+        return self.owner._extract_markdown_path(sender.draggingPasteboard()) is not None
+
+    def performDragOperation_(self, sender):
+        file_path = self.owner._extract_markdown_path(sender.draggingPasteboard())
+        if not file_path:
+            return False
+        self.owner.load_file(file_path)
+        return True
 
 
 class MarkdownAppDelegate(NSObject):
@@ -117,18 +267,20 @@ class MarkdownAppDelegate(NSObject):
             | NSWindowStyleMaskMiniaturizable
         )
         frame = NSMakeRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
-        self.window = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(frame, style, 2, False)
+        self.window = DropWindow.alloc().initWithContentRect_styleMask_backing_defer_(frame, style, 2, False)
+        self.window.setOwner_(self)
         self.window.setTitle_("Markdown 解析工具")
         self.window.setMinSize_((960, 640))
         self.window.setDelegate_(self)
         self.window.center()
-        content_view = self.window.contentView()
+        content_view = DropContentView.alloc().initWithFrame_owner_(self.window.contentView().frame(), self)
+        self.window.setContentView_(content_view)
         content_view.setWantsLayer_(True)
         content_view.layer().setBackgroundColor_(rgb(244, 246, 251).CGColor())
         self.content_view = content_view
 
         split_height = WINDOW_HEIGHT
-        self.split_view = NSSplitView.alloc().initWithFrame_(NSMakeRect(0, 0, WINDOW_WIDTH, split_height))
+        self.split_view = DropSplitView.alloc().initWithFrame_owner_(NSMakeRect(0, 0, WINDOW_WIDTH, split_height), self)
         self.split_view.setVertical_(True)
         self.split_view.setDividerStyle_(1)
         content_view.addSubview_(self.split_view)
@@ -165,7 +317,7 @@ class MarkdownAppDelegate(NSObject):
         self.toc_scroll = NSScrollView.alloc().initWithFrame_(NSMakeRect(PADDING, PADDING, frame.size.width - PADDING * 2, frame.size.height - 126))
         self.toc_scroll.setHasVerticalScroller_(True)
 
-        self.table_view = NSTableView.alloc().initWithFrame_(self.toc_scroll.bounds())
+        self.table_view = DropTableView.alloc().initWithFrame_owner_(self.toc_scroll.bounds(), self)
         column = NSTableColumn.alloc().initWithIdentifier_("toc")
         column.setWidth_(frame.size.width - PADDING * 2 - 18)
         self.toc_column = column
@@ -196,11 +348,17 @@ class MarkdownAppDelegate(NSObject):
 
         config = WKWebViewConfiguration.alloc().init()
         config.setWebsiteDataStore_(WKWebsiteDataStore.nonPersistentDataStore())
-        self.web_view = WKWebView.alloc().initWithFrame_configuration_(
+        self.web_view = DropWebView.alloc().initWithFrame_configuration_owner_(
             NSMakeRect(0, PATH_BAR_HEIGHT, frame.size.width, frame.size.height - PATH_BAR_HEIGHT),
             config,
+            self,
         )
         wrapper.addSubview_(self.web_view)
+        self.viewer_drop_overlay = DropOverlayView.alloc().initWithFrame_owner_(
+            NSMakeRect(0, PATH_BAR_HEIGHT, frame.size.width, frame.size.height - PATH_BAR_HEIGHT),
+            self,
+        )
+        wrapper.addSubview_(self.viewer_drop_overlay)
         return wrapper
 
     def _layout_views(self):
@@ -231,6 +389,7 @@ class MarkdownAppDelegate(NSObject):
         viewer_height = viewer_bounds.size.height
         self.path_label.setFrame_(NSMakeRect(PADDING, 8, viewer_width - PADDING * 2, 20))
         self.web_view.setFrame_(NSMakeRect(0, PATH_BAR_HEIGHT, viewer_width, viewer_height - PATH_BAR_HEIGHT))
+        self.viewer_drop_overlay.setFrame_(NSMakeRect(0, PATH_BAR_HEIGHT, viewer_width, viewer_height - PATH_BAR_HEIGHT))
 
     def open_file_on_startup(self):
         if len(sys.argv) > 1 and os.path.isfile(sys.argv[1]):
@@ -238,13 +397,31 @@ class MarkdownAppDelegate(NSObject):
             return
         self.chooseFile_(None)
 
+    def _extract_markdown_path(self, pasteboard):
+        file_paths = pasteboard.propertyListForType_(NSFilenamesPboardType) or []
+        if not file_paths:
+            file_url = pasteboard.stringForType_(NSPasteboardTypeFileURL)
+            if file_url:
+                url = NSURL.URLWithString_(file_url)
+                if url:
+                    path = url.path()
+                    file_paths = [path] if path else []
+
+        for file_path in file_paths:
+            if not file_path or not os.path.isfile(file_path):
+                continue
+            extension = os.path.splitext(file_path)[1].lower()
+            if extension in [".md", ".markdown"]:
+                return file_path
+        return None
+
     def show_placeholder(self):
         html = """<!DOCTYPE html><html><body style="margin:0;height:100vh;overflow:hidden;background:#f6f8fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
         <div style="height:100%;padding:24px;">
           <div style="height:100%;background:#fff;border:1px solid #d0d7de;border-radius:12px;box-shadow:0 8px 28px rgba(31,35,40,.08);overflow:auto;">
             <div style="max-width:760px;margin:80px auto;padding:40px;">
               <h1 style="margin:0 0 12px;color:#24292f;">请选择 Markdown 文件</h1>
-              <p style="margin:0;color:#57606a;">右上角点击“选择 .md 文件”，即可用 GitHub 风格查看文档，并预览 Mermaid 流程图。</p>
+              <p style="margin:0;color:#57606a;">左侧点击“选择 .md 文件”，或直接把 Markdown 文件拖入窗口，即可用 GitHub 风格查看文档，并预览 Mermaid 流程图。</p>
             </div>
           </div>
         </div></body></html>"""
