@@ -1,0 +1,5 @@
+pyinstaller==6.22.3
+Markdown==3.4.4
+pyobjc-core==11.1
+pyobjc-framework-Cocoa==11.1
+pyobjc-framework-WebKit==11.1
