@@ -12,6 +12,41 @@
 - 支持打包为 macOS 原生 `.app`
 - 应用图标已接入打包流程
 
+## 环境要求
+
+### 运行环境
+
+- 操作系统：macOS 12.7.6
+- 架构：Apple Silicon `arm64`
+- Python：`3.9.6`
+
+### Python 依赖版本
+
+项目当前固定依赖如下：
+
+```txt
+pyinstaller==6.22.3
+Markdown==3.4.4
+pyobjc-core==11.1
+pyobjc-framework-Cocoa==11.1
+pyobjc-framework-WebKit==11.1
+```
+
+### 打包与系统工具版本
+
+- PyInstaller：`6.22.3`
+- Xcode：`14.2`
+- Xcode Build version：`14C18`
+- `qlmanage`：macOS 自带 Quick Look 工具，用于 SVG 图标回退转换
+- `sips`：macOS 自带图片处理工具，用于生成多尺寸图标
+- `iconutil`：macOS 自带图标打包工具，用于生成 `.icns`
+
+### 依赖安装
+
+```bash
+python3 -m pip install -r requirements.txt
+```
+
 ## 项目结构
 
 ```text
