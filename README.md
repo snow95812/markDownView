@@ -6,10 +6,13 @@
 
 - 选择 `.md` 或 `.markdown` 文件后自动解析并展示
 - 支持将 `.md` 文件直接拖入窗口打开
-- 左侧显示文档目录，点击标题可快速跳转
+- 支持在 Finder 中右键 `.md` 文件，通过“打开方式”使用本应用打开
+- 左侧显示已打开文件列表，文件名单行省略展示，悬停可查看完整名称
+- 文档目录改为右侧半透明悬浮图标，默认展开标题目录，点击空白区域可收起并支持快速跳转
 - 右侧使用接近 GitHub 的阅读样式展示正文
 - 支持标题、段落、引用、无序列表、有序列表、代码块、表格、分割线、链接
 - 支持 Mermaid 图表渲染，包括流程图、技术架构图等常见结构图
+- 支持 macOS 标准快捷键，如 `Command+C` 复制、`Command+A` 全选、`Command+O` 打开文件
 - 支持打包为 macOS 原生 `.app`
 - 应用图标已接入打包流程
 
@@ -160,3 +163,4 @@ flowchart LR
 - Markdown 渲染使用 `markdown` Python 库，并启用 `extra`、`toc`、`sane_lists` 扩展
 - Mermaid 使用本地 `mermaid.min.js` 进行前端渲染，支持流程图与技术架构图
 - 打包使用 `PyInstaller`，输出 `.app` 到 `dist/`
+- 为兼容 Finder 中“打开方式”传文件，打包启用了 PyInstaller 的 `--argv-emulation`

@@ -41,11 +41,34 @@ python3 -m PyInstaller \
   --noconfirm \
   --clean \
   --windowed \
+  --argv-emulation \
   --name "Markdown Parser" \
   --icon "$ICON_ICNS" \
   --hidden-import "WebKit" \
   --add-data "$ROOT_DIR/assets:assets" \
   "$ROOT_DIR/app.py"
 
+APP_PATH="$ROOT_DIR/dist/Markdown Parser.app"
+PLIST_PATH="$APP_PATH/Contents/Info.plist"
+
+echo "Configuring app metadata..."
+/usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier com.zhaohui.markdownparser" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Delete :CFBundleDocumentTypes" "$PLIST_PATH" >/dev/null 2>&1 || true
+/usr/libexec/PlistBuddy -c "Add :CFBundleDocumentTypes array" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :CFBundleDocumentTypes:0 dict" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :CFBundleDocumentTypes:0:CFBundleTypeName string Markdown Document" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :CFBundleDocumentTypes:0:CFBundleTypeRole string Viewer" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :CFBundleDocumentTypes:0:LSHandlerRank string Owner" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :CFBundleDocumentTypes:0:CFBundleTypeExtensions array" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :CFBundleDocumentTypes:0:CFBundleTypeExtensions:0 string md" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :CFBundleDocumentTypes:0:CFBundleTypeExtensions:1 string markdown" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :CFBundleDocumentTypes:0:CFBundleTypeMIMETypes array" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :CFBundleDocumentTypes:0:CFBundleTypeMIMETypes:0 string text/markdown" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :CFBundleDocumentTypes:0:CFBundleTypeIconFile string app-icon.icns" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Set :NSHighResolutionCapable true" "$PLIST_PATH"
+
+echo "Registering app with Launch Services..."
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$APP_PATH" >/dev/null 2>&1 || true
+
 echo "Done."
-echo "App path: $ROOT_DIR/dist/Markdown Parser.app"
+echo "App path: $APP_PATH"

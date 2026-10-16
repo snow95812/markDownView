@@ -129,13 +129,37 @@ def _build_html(title: str, body_html: str) -> str:
       background: #0d1117;
       color: #e6edf3;
       border-radius: 10px;
-      padding: 16px;
+      padding: 40px 16px 16px;
       overflow: auto;
+      position: relative;
     }}
     .markdown-body pre code {{
       background: transparent;
       color: inherit;
       padding: 0;
+    }}
+    .code-block {{
+      position: relative;
+    }}
+    .copy-code-button {{
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      border: 1px solid rgba(240, 246, 252, 0.16);
+      border-radius: 6px;
+      background: rgba(240, 246, 252, 0.08);
+      color: #e6edf3;
+      font-size: 12px;
+      line-height: 1;
+      padding: 6px 10px;
+      cursor: pointer;
+    }}
+    .copy-code-button:hover {{
+      background: rgba(240, 246, 252, 0.14);
+    }}
+    .copy-code-button.copied {{
+      color: #7ee787;
+      border-color: rgba(126, 231, 135, 0.35);
     }}
     .markdown-body blockquote {{
       margin-left: 0;
@@ -226,6 +250,58 @@ def _build_html(title: str, body_html: str) -> str:
       }}
     }}
 
+    function fallbackCopyText(text) {{
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', 'readonly');
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      const copied = document.execCommand('copy');
+      document.body.removeChild(textarea);
+      return copied;
+    }}
+
+    function copyText(text) {{
+      if (navigator.clipboard && navigator.clipboard.writeText) {{
+        return navigator.clipboard.writeText(text).catch(function() {{
+          return fallbackCopyText(text);
+        }});
+      }}
+      return Promise.resolve(fallbackCopyText(text));
+    }}
+
+    function attachCodeCopyButtons() {{
+      const blocks = document.querySelectorAll('.markdown-body pre');
+      blocks.forEach(function(pre) {{
+        if (pre.querySelector('.copy-code-button')) {{
+          return;
+        }}
+        const wrapper = document.createElement('div');
+        wrapper.className = 'code-block';
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(pre);
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'copy-code-button';
+        button.textContent = '复制';
+        button.addEventListener('click', function() {{
+          copyText(pre.innerText || pre.textContent || '').then(function() {{
+            button.textContent = '已复制';
+            button.classList.add('copied');
+            window.setTimeout(function() {{
+              button.textContent = '复制';
+              button.classList.remove('copied');
+            }}, 1200);
+          }});
+        }});
+        wrapper.appendChild(button);
+      }});
+    }}
+
     function scrollToHeading(id) {{
       const target = document.getElementById(id);
       if (target) {{
@@ -234,9 +310,13 @@ def _build_html(title: str, body_html: str) -> str:
     }}
 
     if (document.readyState === 'loading') {{
-      document.addEventListener('DOMContentLoaded', convertMermaidBlocks);
+      document.addEventListener('DOMContentLoaded', function() {{
+        convertMermaidBlocks();
+        attachCodeCopyButtons();
+      }});
     }} else {{
       convertMermaidBlocks();
+      attachCodeCopyButtons();
     }}
   </script>
 </body>
